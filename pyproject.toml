@@ -1,58 +1,30 @@
-# pyproject.toml
-
 [build-system]
-# 定义构建项目所需的系统依赖，这里使用setuptools作为构建后端
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-# 项目基本信息
-name = "my_project"
+name = "vibe-cli-sandbox"
 version = "0.1.0"
-description = "一个使用现代Python工程化的示例项目"
+description = "Vibe Coding-inspired CLI sandbox (mock backend first)"
 readme = "README.md"
 requires-python = ">=3.9"
-authors = [
-    {name = "你的名字", email = "your.email@example.com"},
-]
-license = {text = "MIT"}
-
-# 核心运行依赖
+license = { text = "MIT" }
 dependencies = [
-    "requests>=2.28",
-    "pydantic>=2.0",
+  "pydantic>=2.0",
+  "typer>=0.9",
+  "rich>=13.0",
 ]
 
-# 可选依赖组，可按需安装
+[project.scripts]
+vibe = "vibe_cli_sandbox.cli:app"
+
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.0",      # 测试框架
-    "pytest-cov",       # 测试覆盖率
-    "black>=22.0",      # 代码格式化
-    "flake8>=4.0",      # 代码风格检查
-    "mypy>=0.990",      # 静态类型检查
+  "pytest>=7.0",
+  "pytest-cov",
 ]
 
-# 依赖组 (PEP 735) 用于管理非发布依赖，如测试和文档构建 [citation:2][citation:4]
-[dependency-groups]
-test = [
-    "pytest>=7.0",
-    "pytest-cov",
-]
-lint = [
-    "black>=22.0",
-    "flake8>=4.0",
-    "mypy>=0.990",
-]
-
-# 配置工具
 [tool.pytest.ini_options]
-# pytest 配置 [citation:3][citation:5]
 minversion = "7.0"
 testpaths = ["tests"]
-addopts = "-ra -q --cov=src/my_project"
-
-[tool.black]
-# black 配置
-line-length = 88
-target-version = ['py39']
+addopts = "-ra -q"
