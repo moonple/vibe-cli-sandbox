@@ -31,7 +31,7 @@ def run_task(config: TaskConfig) -> TaskResult:
         Change(
             file="README.md",
             summary="Updated documentation with task information",
-            diff="+ # Task: {config.task_description}\n+ This task was processed by vibe."
+            diff=f"+ # Task: {config.task_description}\n+ This task was processed by vibe."
         ),
         Change(
             file="src/main.py",
