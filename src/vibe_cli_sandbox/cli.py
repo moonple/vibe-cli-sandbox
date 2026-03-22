@@ -69,3 +69,26 @@ def version():
 
 if __name__ == "__main__":
     app()
+
+
+# ...保持你原本的 import 不变，新增：
+import time
+import uuid
+from .models import TaskResult, ErrorInfo
+
+# 在 except Exception as e: 里，改成类似：
+except Exception as e:
+    console.print(f"[red]❌ Error: {e}[/red]")
+
+    # If user requested json output, write a structured failure result
+    if json_out:
+        fail = TaskResult(
+            request_id=uuid.uuid4().hex,
+            success=False,
+            message=str(e),
+            timings_ms={"total_ms": 0.0},
+            error=ErrorInfo(type=type(e).__name__, message=str(e)),
+        )
+        json_out.write_text(fail.to_json())
+
+    raise typer.Exit(1)
