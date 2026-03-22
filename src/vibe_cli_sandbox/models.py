@@ -21,6 +21,11 @@ class TaskResult(BaseModel):
     message: str = ""
     changes: List[Change] = Field(default_factory=list)
     
+    # Observability fields for JSON output
+    request_id: str = ""
+    timings_ms: dict[str, float] = Field(default_factory=dict)
+    error: Optional[dict] = None  # Will contain {"type": str, "message": str, "details": Optional[str]}
+    
     def to_markdown(self) -> str:
         """Convert result to markdown format."""
         lines = ["# Vibe Task Result\n"]
