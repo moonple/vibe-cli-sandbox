@@ -6,12 +6,13 @@ from rich.panel import Panel
 from rich.table import Table
 from pathlib import Path
 from typing import Optional
+import uuid
 
-from .models import TaskConfig
-from .runner import run_task
+from .models import TaskConfig, TaskResult
 
 app = typer.Typer(help="Vibe CLI Sandbox - AI-powered code assistance")
 console = Console()
+
 
 @app.command()
 def run(
@@ -29,16 +30,17 @@ def run(
         f"Task: {task}",
         title="🚀 Starting"
     ))
-    
+
     config = TaskConfig(repo_path=repo, task_description=task)
-    
+
     try:
+        from .runner import run_task
         result = run_task(config)
-        
+
         # Display results
         console.print(f"\n[green]✅ Task completed![/green]")
         console.print(f"Changes: {len(result.changes)} files modified")
-        
+
         # Create table of changes
         if result.changes:
             table = Table(title="Changes Made")
@@ -47,24 +49,21 @@ def run(
             for change in result.changes[:5]:  # Show first 5
                 table.add_row(change.file, change.summary[:50])
             console.print(table)
-        
+
         # Write output files
         if out:
             out.write_text(result.to_markdown())
             console.print(f"\n[blue]📝 Markdown output written to: {out}[/blue]")
-        
+
         if json_out:
             json_out.write_text(result.to_json())
             console.print(f"[blue]📊 JSON output written to: {json_out}[/blue]")
-            
-       except Exception as e:
+
+    except Exception as e:
         console.print(f"[red]❌ Error: {e}[/red]")
-        
+
         # If user requested JSON output, write a structured failure result
         if json_out:
-            import uuid
-            from .models import TaskResult
-            
             fail = TaskResult(
                 request_id=uuid.uuid4().hex,
                 success=False,
@@ -78,8 +77,9 @@ def run(
             )
             json_out.write_text(fail.to_json())
             console.print(f"[blue]📊 JSON output written to: {json_out}[/blue]")
-        
+
         raise typer.Exit(1)
+
 
 @app.command()
 def version():
@@ -87,28 +87,6 @@ def version():
     from . import __version__
     console.print(f"[bold]Vibe CLI Sandbox[/bold] version {__version__}")
 
+
 if __name__ == "__main__":
     app()
-
-
-# ...保持你原本的 import 不变，新增：
-import time
-import uuid
-from .models import TaskResult, ErrorInfo
-
-# 在 except Exception as e: 里，改成类似：
-except Exception as e:
-    console.print(f"[red]❌ Error: {e}[/red]")
-
-    # If user requested json output, write a structured failure result
-    if json_out:
-        fail = TaskResult(
-            request_id=uuid.uuid4().hex,
-            success=False,
-            message=str(e),
-            timings_ms={"total_ms": 0.0},
-            error=ErrorInfo(type=type(e).__name__, message=str(e)),
-        )
-        json_out.write_text(fail.to_json())
-
-    raise typer.Exit(1)
