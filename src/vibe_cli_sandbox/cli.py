@@ -57,8 +57,28 @@ def run(
             json_out.write_text(result.to_json())
             console.print(f"[blue]📊 JSON output written to: {json_out}[/blue]")
             
-    except Exception as e:
+       except Exception as e:
         console.print(f"[red]❌ Error: {e}[/red]")
+        
+        # If user requested JSON output, write a structured failure result
+        if json_out:
+            import uuid
+            from .models import TaskResult
+            
+            fail = TaskResult(
+                request_id=uuid.uuid4().hex,
+                success=False,
+                message=str(e),
+                timings_ms={"total_ms": 0.0},
+                error={
+                    "type": type(e).__name__,
+                    "message": str(e),
+                    "details": None
+                }
+            )
+            json_out.write_text(fail.to_json())
+            console.print(f"[blue]📊 JSON output written to: {json_out}[/blue]")
+        
         raise typer.Exit(1)
 
 @app.command()
