@@ -36,7 +36,7 @@ vibe run --repo . --task "timing smoke test" --out out.success.md --json-out out
 快速查看字段（可选）：
 
 ```bash
-python - <<'PY2'
+python3 - <<'PY2'
 import json
 d=json.load(open("out.success.json","r",encoding="utf-8"))
 print("request_id:", d.get("request_id"))
@@ -53,7 +53,7 @@ PY2
 
 ```bash
 vibe run --repo ./__repo_does_not_exist__ --task "test" --json-out out.fail.json
-cat out.fail.json | python -m json.tool
+cat out.fail.json | python3 -m json.tool
 ```
 
 关键观察：
@@ -69,7 +69,7 @@ cat out.fail.json | python -m json.tool
 运行 eval：
 
 ```bash
-python eval/run_cases.py
+python3 eval/run_cases.py
 ```
 
 产物：
