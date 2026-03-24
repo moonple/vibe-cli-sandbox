@@ -19,6 +19,7 @@ class CaseResult:
     request_id: str | None
     timings_ms: dict[str, float]
     duration_ms: float
+    plan: list[str]
 
 
 def _pctl(values: list[float], p: float) -> float:
@@ -122,6 +123,7 @@ def run_case(case: dict[str, Any]) -> CaseResult:
         request_id=res.request_id,
         timings_ms=dict(res.timings_ms),
         duration_ms=dur_ms,
+        plan=list(res.plan or []),
     )
 
 
@@ -181,7 +183,7 @@ def main() -> int:
                 "request_id": r.request_id,
                 "timings_ms": r.timings_ms,
                 "duration_ms": r.duration_ms,
-                "plan": getattr(r, "plan", []),  # 添加 plan 到报告
+                "plan": r.plan,  # 添加 plan 到报告
             }
             for r in results
         ],
