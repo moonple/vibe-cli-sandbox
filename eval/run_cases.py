@@ -87,7 +87,7 @@ def render_markdown_report(report: dict) -> str:
             f"| {c['id']} | {'✅' if c['ok'] else '❌'} | "
             f"{'✅' if c['actual_success'] else '❌'} | "
             f"{c.get('error_type') or ''} | {reason} | {float(total_ms):.3f} | {plan_len} |\n"
-)
+        )
 
     return "".join(lines)
 
