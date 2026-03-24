@@ -4,10 +4,11 @@
 
 ## 0. 准备（30s）
 
+先 cd 到仓库根目录
 在仓库根目录：
 
 ```bash
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 pip install -e .
 ```
