@@ -4,7 +4,7 @@
 
 ## 0. 准备（30s）
 
-先 cd 到仓库根目录
+先 cd 到仓库根目录cd ~/projects/vibe-cli-sandbox
 在仓库根目录：
 
 ```bash
