@@ -36,15 +36,7 @@ vibe run --repo . --task "timing smoke test" --out out.success.md --json-out out
 快速查看字段（可选）：
 
 ```bash
-python3 - <<'PY2'
-import json
-d=json.load(open("out.success.json","r",encoding="utf-8"))
-print("request_id:", d.get("request_id"))
-print("timings_ms:", d.get("timings_ms"))
-print("plan_len:", len(d.get("plan") or []))
-print("changes:", len(d.get("changes") or []))
-print("error:", d.get("error"))
-PY2
+python3 -c 'import json; d=json.load(open("out.success.json","r",encoding="utf-8")); print("request_id:", d.get("request_id")); print("timings_ms:", d.get("timings_ms")); print("plan_len:", len(d.get("plan") or [])); print("changes:", len(d.get("changes") or [])); print("error:", d.get("error"))'
 ```
 
 ## 2. Demo：失败场景（30s）
