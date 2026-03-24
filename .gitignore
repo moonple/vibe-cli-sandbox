@@ -30,6 +30,8 @@ wheels/
 # Project specific
 out.md
 out.json
+out.success.*
+out.fail.*
 .vscode/
 .idea/
 *.log
@@ -39,8 +41,6 @@ out.json
 Thumbs.db
 
 # Eval reports
-eval/report.json
-eval/report.json
 eval/report.json
 eval/report.md
 *.egg-info/
