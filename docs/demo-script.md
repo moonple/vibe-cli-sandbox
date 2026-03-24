@@ -10,7 +10,7 @@
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -e .
+python3 -m pip install -e .
 ```
 
 说明：
