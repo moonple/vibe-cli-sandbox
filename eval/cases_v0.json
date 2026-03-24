@@ -1,0 +1,33 @@
+[
+  {
+    "id": "ok_repo_current_dir",
+    "repo": ".",
+    "task": "timing smoke test",
+    "expect_success": true
+  },
+  {
+    "id": "ok_repo_parent_dir",
+    "repo": "..",
+    "task": "scan parent repo path",
+    "expect_success": true
+  },
+  {
+    "id": "fail_repo_not_found",
+    "repo": "./__repo_does_not_exist__",
+    "task": "should fail with repo_not_found",
+    "expect_success": false,
+    "expect_error_type": "repo_not_found"
+  },
+  {
+    "id": "ok_short_task",
+    "repo": ".",
+    "task": "x",
+    "expect_success": true
+  },
+  {
+    "id": "ok_long_task",
+    "repo": ".",
+    "task": "Write a short plan and pretend to update README, include timings and request_id in json output",
+    "expect_success": true
+  }
+]
