@@ -29,5 +29,12 @@
     "repo": ".",
     "task": "Write a short plan and pretend to update README, include timings and request_id in json output",
     "expect_success": true
+  },
+  {
+    "id": "fail_plan_too_short",
+    "repo": ".",
+    "task": "test plan length requirement",
+    "expect_success": true,
+    "expect_min_plan_len": 5
   }
 ]

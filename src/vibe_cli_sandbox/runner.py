@@ -16,9 +16,8 @@ def run_task(config: TaskConfig) -> TaskResult:
     """
     t0 = time.perf_counter()
     request_id = uuid.uuid4().hex
-
-    timings_ms: dict[str, float] = {}
-
+    timings_ms = {}
+    
     # Validate repo path
     tv0 = time.perf_counter()
     repo_path = Path(config.repo_path)
@@ -33,7 +32,8 @@ def run_task(config: TaskConfig) -> TaskResult:
             error=ErrorInfo(
                 type="repo_not_found",
                 message=f"Repository path not found: {repo_path}",
-            ),
+                details=None
+            )
         )
     timings_ms["validate_repo_ms"] = (time.perf_counter() - tv0) * 1000.0
 
@@ -42,8 +42,15 @@ def run_task(config: TaskConfig) -> TaskResult:
     result = TaskResult(
         request_id=request_id,
         success=True,
-        message=f"Successfully processed task: {config.task_description[:100]}",
+        message=f"Successfully processed task: {config.task_description[:100]}"
     )
+    
+    # Add plan field with structured steps
+    result.plan = [
+        "1. Scan repository structure and identify relevant files",
+        "2. Propose minimal changes and expected diffs",
+        "3. Provide verification commands and fallback steps",
+    ]
 
     # Mock changes (for demonstration)
     result.changes = [

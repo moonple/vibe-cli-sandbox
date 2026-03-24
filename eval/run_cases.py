@@ -66,14 +66,15 @@ def render_markdown_report(report: dict) -> str:
     lines.append("\n")
 
     lines.append("## Case details\n\n")
-    lines.append("| id | ok | actual_success | error_type | total_ms |\n")
-    lines.append("|---|---:|---:|---|---:|\n")
+    lines.append("| id | ok | actual_success | error_type | total_ms | plan_len |\n")
+    lines.append("|---|---:|---:|---:|---:|---:|\n")
     for c in cases:
         total_ms = (c.get("timings_ms") or {}).get("total_ms", 0.0)
+        plan_len = len(c.get("plan", [])) if c.get("plan") else 0
         lines.append(
             f"| {c['id']} | {'✅' if c['ok'] else '❌'} | "
             f"{'✅' if c['actual_success'] else '❌'} | "
-            f"{c.get('error_type') or ''} | {float(total_ms):.3f} |\n"
+            f"{c.get('error_type') or ''} | {float(total_ms):.3f} | {plan_len} |\n"
         )
 
     return "".join(lines)
@@ -104,6 +105,12 @@ def run_case(case: dict[str, Any]) -> CaseResult:
         ok = False
     if not isinstance(res.timings_ms, dict) or "total_ms" not in res.timings_ms:
         ok = False
+    
+    # Plan quality check
+    if "expect_min_plan_len" in case:
+        min_len = case["expect_min_plan_len"]
+        if not getattr(res, "plan", None) or len(res.plan) < min_len:
+            ok = False
 
     return CaseResult(
         id=case["id"],
@@ -174,6 +181,7 @@ def main() -> int:
                 "request_id": r.request_id,
                 "timings_ms": r.timings_ms,
                 "duration_ms": r.duration_ms,
+                "plan": getattr(r, "plan", []),  # 添加 plan 到报告
             }
             for r in results
         ],

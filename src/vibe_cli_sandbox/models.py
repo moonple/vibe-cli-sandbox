@@ -1,7 +1,8 @@
 """Data models for vibe tasks."""
 
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict
+from typing import List, Optional
+from pathlib import Path
 
 
 class TaskConfig(BaseModel):
@@ -30,9 +31,8 @@ class TaskResult(BaseModel):
     success: bool = True
     message: str = ""
     changes: List[Change] = Field(default_factory=list)
-
-    # Observability fields (written into out.json)
-    timings_ms: Dict[str, float] = Field(default_factory=dict)
+    plan: List[str] = Field(default_factory=list)  # 新增 plan 字段
+    timings_ms: dict[str, float] = Field(default_factory=dict)
     error: Optional[ErrorInfo] = None
 
     def to_markdown(self) -> str:
@@ -41,8 +41,15 @@ class TaskResult(BaseModel):
         lines.append(f"**Status:** {'✅ Success' if self.success else '❌ Failed'}\n")
         if self.message:
             lines.append(f"**Message:** {self.message}\n")
+        
+        # Add plan section if exists
+        if self.plan:
+            lines.append("\n## Plan\n")
+            for step in self.plan:
+                lines.append(f"- {step}\n")
+        
         if self.changes:
-            lines.append("## Changes Made\n")
+            lines.append("\n## Changes Made\n")
             for change in self.changes:
                 lines.append(f"### {change.file}\n")
                 lines.append(f"{change.summary}\n")
