@@ -46,6 +46,15 @@ def render_markdown_report(report: dict) -> str:
     lines.append(f"- Pass rate: {meta['pass_rate']:.2%}\n\n")
 
     lines.append("## Failure types\n\n")
+    quality_fail_types = report.get("quality_fail_types", {})
+
+    lines.append("## Quality gate failures (ok=false but actual_success=true)\n\n")
+    if not quality_fail_types:
+        lines.append("- None\n")
+    else:
+        for k, v in quality_fail_types.items():
+            lines.append(f"- {k}: {v}\n")
+    lines.append("\n")
     if not fail_types:
         lines.append("- None\n")
     else:
@@ -67,16 +76,17 @@ def render_markdown_report(report: dict) -> str:
     lines.append("\n")
 
     lines.append("## Case details\n\n")
-    lines.append("| id | ok | actual_success | error_type | total_ms | plan_len |\n")
-    lines.append("|---|---:|---:|---:|---:|---:|\n")
+    lines.append("| id | ok | actual_success | error_type | reason | total_ms | plan_len |\n")
+    lines.append("|---|---:|---:|---:|---|---:|---:|\n")
     for c in cases:
         total_ms = (c.get("timings_ms") or {}).get("total_ms", 0.0)
         plan_len = len(c.get("plan", [])) if c.get("plan") else 0
+        reason = c.get("reason") or ""
         lines.append(
             f"| {c['id']} | {'✅' if c['ok'] else '❌'} | "
             f"{'✅' if c['actual_success'] else '❌'} | "
-            f"{c.get('error_type') or ''} | {float(total_ms):.3f} | {plan_len} |\n"
-        )
+            f"{c.get('error_type') or ''} | {reason} | {float(total_ms):.3f} | {plan_len} |\n"
+)
 
     return "".join(lines)
 
