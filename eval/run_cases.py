@@ -157,6 +157,13 @@ def main() -> int:
         if not r.actual_success:
             key = r.error_type or "unknown"
             fail_types[key] = fail_types.get(key, 0) + 1
+    # Quality gate failure distribution (when actual_success is True but ok is False)
+    quality_fail_types: dict[str, int] = {}
+    for r in results:
+        if r.actual_success and (not r.ok):
+            # For now we only have a plan length gate; keep it explicit and stable.
+            key = "plan_too_short"
+            quality_fail_types[key] = quality_fail_types.get(key, 0) + 1
 
     # Timing stats (take total_ms from timings_ms)
     total_ms_values = [
@@ -181,6 +188,7 @@ def main() -> int:
             "pass_rate": success_rate,
         },
         "fail_types": fail_types,
+        "quality_fail_types": quality_fail_types,
         "timing_total_ms": timing_stats,
         "cases": [
             {
