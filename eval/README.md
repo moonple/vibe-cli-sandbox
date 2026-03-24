@@ -6,7 +6,7 @@
 
 ```bash
 # 1. 安装包（在项目根目录执行）
-pip install -e .
+python3 -m pip install -e .
 
 # 2. 运行评测
 python3 eval/run_cases.py
