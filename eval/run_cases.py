@@ -125,7 +125,12 @@ def run_case(case: dict[str, Any]) -> CaseResult:
         if not getattr(res, "plan", None) or len(res.plan) < min_len:
             ok = False
             reason = "plan_too_short"
-
+            
+    # If the run succeeded but the case failed, this is a quality-gate failure.
+    # Ensure we always emit a stable reason key to avoid "unknown" in aggregation.
+    if res.success and (not ok) and (reason is None):
+        reason = "quality_gate_failed"
+        
     return CaseResult(
         id=case["id"],
         ok=ok,
@@ -165,7 +170,7 @@ def main() -> int:
     quality_fail_types: dict[str, int] = {}
     for r in results:
         if r.actual_success and (not r.ok):
-            key = r.reason or "unknown"
+            key = r.reason or "quality_gate_failed"
             quality_fail_types[key] = quality_fail_types.get(key, 0) + 1
 
     # Timing stats (take total_ms from timings_ms)
