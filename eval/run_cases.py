@@ -20,6 +20,7 @@ class CaseResult:
     timings_ms: dict[str, float]
     duration_ms: float
     plan: list[str]
+    reason: str | None
 
 
 def _pctl(values: list[float], p: float) -> float:
@@ -46,19 +47,19 @@ def render_markdown_report(report: dict) -> str:
     lines.append(f"- Pass rate: {meta['pass_rate']:.2%}\n\n")
 
     lines.append("## Failure types\n\n")
-    quality_fail_types = report.get("quality_fail_types", {})
+    if not fail_types:
+        lines.append("- None\n")
+    else:
+        for k, v in fail_types.items():
+            lines.append(f"- {k}: {v}\n")
+    lines.append("\n")
 
+    quality_fail_types = report.get("quality_fail_types", {})
     lines.append("## Quality gate failures (ok=false but actual_success=true)\n\n")
     if not quality_fail_types:
         lines.append("- None\n")
     else:
         for k, v in quality_fail_types.items():
-            lines.append(f"- {k}: {v}\n")
-    lines.append("\n")
-    if not fail_types:
-        lines.append("- None\n")
-    else:
-        for k, v in fail_types.items():
             lines.append(f"- {k}: {v}\n")
     lines.append("\n")
 
@@ -118,10 +119,12 @@ def run_case(case: dict[str, Any]) -> CaseResult:
         ok = False
     
     # Plan quality check
+    reason: str | None = None
     if "expect_min_plan_len" in case:
         min_len = case["expect_min_plan_len"]
         if not getattr(res, "plan", None) or len(res.plan) < min_len:
             ok = False
+            reason = "plan_too_short"
 
     return CaseResult(
         id=case["id"],
@@ -134,6 +137,7 @@ def run_case(case: dict[str, Any]) -> CaseResult:
         timings_ms=dict(res.timings_ms),
         duration_ms=dur_ms,
         plan=list(res.plan or []),
+        reason=reason,
     )
 
 
@@ -161,8 +165,7 @@ def main() -> int:
     quality_fail_types: dict[str, int] = {}
     for r in results:
         if r.actual_success and (not r.ok):
-            # For now we only have a plan length gate; keep it explicit and stable.
-            key = "plan_too_short"
+            key = r.reason or "unknown"
             quality_fail_types[key] = quality_fail_types.get(key, 0) + 1
 
     # Timing stats (take total_ms from timings_ms)
@@ -201,7 +204,8 @@ def main() -> int:
                 "request_id": r.request_id,
                 "timings_ms": r.timings_ms,
                 "duration_ms": r.duration_ms,
-                "plan": r.plan,  # 添加 plan 到报告
+                "plan": r.plan,
+                "reason": r.reason,
             }
             for r in results
         ],

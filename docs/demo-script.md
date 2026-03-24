@@ -70,9 +70,10 @@ python3 eval/run_cases.py
 
 展示 `eval/report.md` 的关键信息：
 - `pass_rate`：不是 100%（证明评测能发现问题）
-- `fail_types`：失败类型分布（例如 `repo_not_found` / `fail_plan_too_short`）
+- `fail_types`：运行时失败类型分布（例如 `repo_not_found`）
+- `quality_fail_types`：质量门槛失败分布（例如 `plan_too_short`，对应 `actual_success=true` 但 `ok=false` 的用例）
 - `timing_total_ms`：性能统计（mean/p50/p95）
-- case 级别的 `plan_len`：展示质量门槛（plan 长度不足会失败）
+- case 级别的 `reason` 列：解释质量门槛失败原因（例如 `plan_too_short`），`plan_len` 展示实际 plan 长度
 
 ## 4. 收尾（15s）
 
