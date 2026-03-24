@@ -31,8 +31,56 @@ def _pctl(values: list[float], p: float) -> float:
     return float(values_sorted[k])
 
 
+def render_markdown_report(report: dict) -> str:
+    """Generate human-readable markdown report from eval results."""
+    meta = report["meta"]
+    fail_types = report.get("fail_types", {})
+    timing = report.get("timing_total_ms", {})
+    cases = report.get("cases", [])
+
+    lines = []
+    lines.append("# Eval Report\n\n")
+    lines.append(f"- Total cases: {meta['total_cases']}\n")
+    lines.append(f"- Passed cases: {meta['passed_cases']}\n")
+    lines.append(f"- Pass rate: {meta['pass_rate']:.2%}\n\n")
+
+    lines.append("## Failure types\n\n")
+    if not fail_types:
+        lines.append("- None\n")
+    else:
+        for k, v in fail_types.items():
+            lines.append(f"- {k}: {v}\n")
+    lines.append("\n")
+
+    lines.append("## Timing stats (timings_ms.total_ms)\n\n")
+    if timing:
+        for k in ["count", "mean_ms", "p50_ms", "p95_ms", "min_ms", "max_ms"]:
+            if k in timing:
+                val = timing[k]
+                if isinstance(val, (int, float)):
+                    lines.append(f"- {k}: {val:.3f}ms\n")
+                else:
+                    lines.append(f"- {k}: {val}\n")
+    else:
+        lines.append("- No timing data\n")
+    lines.append("\n")
+
+    lines.append("## Case details\n\n")
+    lines.append("| id | ok | actual_success | error_type | total_ms |\n")
+    lines.append("|---|---:|---:|---|---:|\n")
+    for c in cases:
+        total_ms = (c.get("timings_ms") or {}).get("total_ms", 0.0)
+        lines.append(
+            f"| {c['id']} | {'✅' if c['ok'] else '❌'} | "
+            f"{'✅' if c['actual_success'] else '❌'} | "
+            f"{c.get('error_type') or ''} | {float(total_ms):.3f} |\n"
+        )
+
+    return "".join(lines)
+
+
 def run_case(case: dict[str, Any]) -> CaseResult:
-    from vibe_cli_sandbox.models import TaskConfig  # local import for editable installs
+    from vibe_cli_sandbox.models import TaskConfig
     from vibe_cli_sandbox.runner import run_task
 
     t0 = time.perf_counter()
@@ -131,8 +179,16 @@ def main() -> int:
         ],
     }
 
+    # Write JSON report
     report_path.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"[eval] JSON report written to: {report_path}")
 
+    # Write Markdown report
+    report_md_path = Path(__file__).parent / "report.md"
+    report_md_path.write_text(render_markdown_report(report), encoding="utf-8")
+    print(f"[eval] Markdown report written to: {report_md_path}")
+
+    # Print summary
     print(f"[eval] total={total} passed={passed} pass_rate={success_rate:.2%}")
     if fail_types:
         print(f"[eval] fail_types={fail_types}")
