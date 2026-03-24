@@ -9,4 +9,4 @@
 pip install -e .
 
 # 2. 运行评测
-python eval/run_cases.py
+python3 eval/run_cases.py
