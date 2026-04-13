@@ -98,9 +98,9 @@ def run(
                 timings_ms={"total_ms": 0.0},
                 error={
                     "type": "runtime_error",
-                    "message": str(e),
-                    "details": None,
-                    commands=[],
+                    "message":str(e),
+                    "details":None,
+                    commands:[],
                     risks=[],
                     fallback=[ "Re-run with a simpler task.", "Check your environment and dependencies." ],
                 }
