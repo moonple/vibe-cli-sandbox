@@ -32,6 +32,9 @@ class TaskResult(BaseModel):
     message: str = ""
     changes: List[Change] = Field(default_factory=list)
     plan: List[str] = Field(default_factory=list)  # 新增 plan 字段
+    commands: List[str] = Field(default_factory=list)
+    risks: List[str] = Field(default_factory=list)
+    fallback: List[str] = Field(default_factory=list)
     timings_ms: dict[str, float] = Field(default_factory=dict)
     error: Optional[ErrorInfo] = None
 
