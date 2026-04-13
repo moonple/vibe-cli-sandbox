@@ -65,8 +65,15 @@ def run(
         result = run_task(config)
 
         # Display results
-        console.print(f"\n[green]✅ Task completed![/green]")
+        if result.success:
+            console.print("\n[green]✅ Task completed![/green]")
+        else:
+            console.print("\n[red]❌ Task failed![/red]")
+
         console.print(f"Changes: {len(result.changes)} files modified")
+        if not result.success and result.error:
+            console.print(f"[red]Error type:[/red] {result.error.type}")
+            console.print(f"[red]Error message:[/red] {result.error.message}")
 
         # Create table of changes
         if result.changes:
