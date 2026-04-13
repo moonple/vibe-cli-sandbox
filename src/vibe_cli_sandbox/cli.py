@@ -33,6 +33,33 @@ def run(
 
     config = TaskConfig(repo_path=repo, task_description=task)
 
+        # Week2: input validation (invalid_input)
+    if not task.strip():
+        fail = TaskResult(
+            request_id=uuid.uuid4().hex,
+            success=False,
+            message="Invalid input: --task is empty",
+            timings_ms={"total_ms": 0.0},
+            error={
+                "type": "invalid_input",
+                "message": "Invalid input: --task is empty",
+                "details": None,
+            },
+            # Week2: structure must be stable even on failure
+            commands=[],
+            risks=[],
+            fallback=[
+                "Provide a non-empty --task string.",
+                'Example: vibe run --repo . --task "timing smoke test" --json-out out.json',
+            ],
+        )
+
+        if json_out:
+            json_out.write_text(fail.to_json())
+            console.print(f"[blue]📊 JSON output written to: {json_out}[/blue]")
+
+        raise typer.Exit(1)
+
     try:
         from .runner import run_task
         result = run_task(config)
@@ -70,9 +97,12 @@ def run(
                 message=str(e),
                 timings_ms={"total_ms": 0.0},
                 error={
-                    "type": type(e).__name__,
+                    error.type = "runtime_error"
                     "message": str(e),
                     "details": None
+                    commands=[]
+                    risks=[]
+                    fallback=[ "Re-run with a simpler task.", "Check your environment and dependencies." ]
                 }
             )
             json_out.write_text(fail.to_json())
