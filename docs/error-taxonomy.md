@@ -61,3 +61,20 @@ Week2 引入顶层字段：`commands` / `risks` / `fallback`（见 `docs/output-
 - `fallback` 给出“检查 repo 路径”的可执行建议
 
 （示例 JSON 省略）
+
+## 4) Week2 验收用例（Acceptance Cases）
+
+目标：至少用 5 条任务验证输出结构一致、错误类型可分类。
+
+- **Task A：正常任务**
+  - 预期：`success=true`
+  - 约定：`commands` / `risks` / `fallback` 仍然必须存在（允许为空数组）
+- **Task B：repo 不存在**
+  - 预期：`success=false`, `error.type="repo_not_found"`
+- **Task C：task 为空**
+  - 预期：`success=false`, `error.type="invalid_input"`
+- **Task D：超时**
+  - 预期：`success=false`, `error.type="timeout_error"`
+- **Task E：不相关/拒答（占位）**
+  - 预期：`error.type="irrelevant"` 或 `error.type="refusal"`
+  - 说明：该类错误依赖真实 LLM/策略判断，Week2 先在文档中占位，后续接入真实生成后实现。
