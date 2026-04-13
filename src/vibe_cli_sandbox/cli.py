@@ -98,12 +98,15 @@ def run(
                 timings_ms={"total_ms": 0.0},
                 error={
                     "type": "runtime_error",
-                    "message":str(e),
-                    "details":None,
-                    commands:[],
-                    risks:[],
-                    fallback:[ "Re-run with a simpler task.", "Check your environment and dependencies." ],
-                }
+                    "message": str(e),
+                    "details": None,
+                },
+                commands=[],
+                risks=[],
+                fallback=[
+                    "Re-run with a simpler task.",
+                    "Check your environment and dependencies.",
+                ],
             )
             json_out.write_text(fail.to_json())
             console.print(f"[blue]📊 JSON output written to: {json_out}[/blue]")
