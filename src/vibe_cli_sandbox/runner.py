@@ -29,6 +29,9 @@ def run_task(config: TaskConfig) -> TaskResult:
             success=False,
             message=f"Repository path not found: {repo_path}",
             timings_ms=timings_ms,
+            commands=[]
+            risks=[]
+            fallback=[ "Check --repo path (absolute path recommended).", "If you're using a URL, clone it first then pass the local path." ]
             error=ErrorInfo(
                 type="repo_not_found",
                 message=f"Repository path not found: {repo_path}",
@@ -43,6 +46,9 @@ def run_task(config: TaskConfig) -> TaskResult:
         request_id=request_id,
         success=True,
         message=f"Successfully processed task: {config.task_description[:100]}"
+        result.commands = ["python -m pytest -q"]
+        result.risks = ["Mock implementation: changes/diff are simulated and not applied to repo."]
+        result.fallback = ["If the output is not useful, simplify the task or provide more context."]
     )
     
     # Add plan field with structured steps
