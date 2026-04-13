@@ -46,9 +46,9 @@ def run_task(config: TaskConfig) -> TaskResult:
         request_id=request_id,
         success=True,
         message=f"Successfully processed task: {config.task_description[:100]}",
-        result.commands = ["python -m pytest -q"],
-        result.risks = ["Mock implementation: changes/diff are simulated and not applied to repo."],
-        result.fallback = ["If the output is not useful, simplify the task or provide more context."],
+        commands=["python -m pytest -q"],
+        risks=["Mock implementation: changes/diff are simulated and not applied to repo."],
+        fallback=["If the output is not useful, simplify the task or provide more context."],
     )
     
     # Add plan field with structured steps
