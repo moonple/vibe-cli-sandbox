@@ -33,6 +33,9 @@
 | error | object \| null | no | 失败时的结构化错误信息（见 ErrorInfo），成功时为 `null` |
 | plan | array(string) | yes | 计划步骤列表（可为空；用于质量门槛/回归） |
 | changes | array(Change) | yes | 变更列表（见 Change），可为空 |
+| commands |array(string) | yes |  success/failed 都必须存在，失败时允许为空数组 |
+| risks | array(string) | yes | success/failed 都必须存在，失败时允许为空数组  |
+| fallback | array(string) | yes |  success/failed 都必须存在，失败时允许为空数组 |
 
 ### timings_ms 约定
 - `total_ms`：端到端总耗时（必须）
