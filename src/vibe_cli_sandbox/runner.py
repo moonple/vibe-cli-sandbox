@@ -29,9 +29,9 @@ def run_task(config: TaskConfig) -> TaskResult:
             success=False,
             message=f"Repository path not found: {repo_path}",
             timings_ms=timings_ms,
-            commands=[]
-            risks=[]
-            fallback=[ "Check --repo path (absolute path recommended).", "If you're using a URL, clone it first then pass the local path." ]
+            commands=[],
+            risks=[],
+            fallback=[ "Check --repo path (absolute path recommended).", "If you're using a URL, clone it first then pass the local path." ],
             error=ErrorInfo(
                 type="repo_not_found",
                 message=f"Repository path not found: {repo_path}",
