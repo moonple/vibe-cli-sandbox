@@ -164,6 +164,8 @@ def run(
         if not result.success:
             raise typer.Exit(1)
 
+    except typer.Exit:
+        raise
     except Exception as e:
         console.print(f"[red]❌ Error: {e}[/red]")
 
