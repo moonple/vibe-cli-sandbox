@@ -118,22 +118,40 @@ def run(
     except Exception as e:
         console.print(f"[red]❌ Error: {e}[/red]")
 
-        # If user requested JSON output, write a structured failure result
+        # 1) Always build the failure result FIRST (so it exists even if writing fails)
+        fail_result = TaskResult(
+            request_id=uuid.uuid4().hex,
+            success=False,
+            message=str(e),
+            timings_ms={"total_ms": 0.0},
+            error={
+                "type": "runtime_error",
+                "message": str(e),
+                "details": None,
+            },
+            commands=[],
+            risks=[],
+            fallback=[
+                "Re-run with a simpler task.",
+                "Check your environment and dependencies.",
+            ],
+        )
+
+        # 2) Try writing JSON to the requested path; if that fails, fallback to CWD
         if json_out:
             try:
-                json_out.write_text(fail.to_json())
+                json_out.write_text(fail_result.to_json())
                 console.print(f"[blue]📊 JSON output written to: {json_out}[/blue]")
             except Exception as write_err:
-                # Fallback: write error JSON next to CWD
                 fallback_path = Path("out.error.json")
-                fallback_path.write_text(fail.to_json())
+                fallback_path.write_text(fail_result.to_json())
                 console.print(
                     f"[red]⚠️ Failed to write JSON to {json_out}: {write_err}[/red]\n"
                     f"[blue]📊 JSON output written to: {fallback_path}[/blue]"
                 )
         else:
-            # If no json_out provided, at least show the JSON on screen
-            console.print(fail.to_json())
+            # If no json_out provided, print JSON to stdout
+            console.print(fail_result.to_json())
 
         raise typer.Exit(1)
 
