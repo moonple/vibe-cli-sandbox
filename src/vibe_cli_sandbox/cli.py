@@ -96,8 +96,7 @@ def run(
             console.print("\n[red]❌ Task failed![/red]")
 
         console.print(f"Changes: {len(result.changes)} files modified")
-        if not result.success and result.error:
-
+       
         # Create table of changes
         if result.changes:
             table = Table(title="Changes Made")
