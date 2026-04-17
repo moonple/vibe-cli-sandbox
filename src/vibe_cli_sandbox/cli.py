@@ -80,132 +80,127 @@ def run(
 
         raise typer.Exit(1)
 
-    try:
-        from .runner import run_task
-        result = run_task(config)
-        # Week3: observability log summary (always print request_id + total_ms)
-        total_ms = None
         try:
-            total_ms = result.timings_ms.get("total_ms")
-        except Exception:
-            total_ms = None
+            from .runner import run_task
+            result = run_task(config)
+
+            # Attempt to write outputs; if it fails, convert to runtime_error and overwrite result.
+            write_failed = False
+            write_exc: Exception | None = None
+
+            try:
+                if out:
+                    out.write_text(result.to_markdown())
+                    console.print(f"\n[blue]📝 Markdown output written to: {out}[/blue]")
     
-        console.print(
-            f"\n[bold]Run Summary[/bold]\n"
-            f"- request_id: {result.request_id}\n"
-            f"- success: {result.success}\n"
-            f"- total_ms: {total_ms}\n"
-        )
+                if json_out:
+                    json_out.write_text(result.to_json())
+                    console.print(f"[blue]📊 JSON output written to: {json_out}[/blue]")
+    
+            except Exception as e:
+                write_failed = True
+                write_exc = e
+    
+                # Overwrite result to represent end-to-end failure (but keep request_id + timings)
+                result = TaskResult(
+                    request_id=result.request_id,
+                    success=False,
+                    message=str(e),
+                    changes=[],
+                    plan=[],
+                    commands=[],
+                    risks=[],
+                    fallback=[
+                        "Choose a writable output path for --json-out/--out.",
+                        "Example: --json-out out.json",
+                    ],
+                    timings_ms=result.timings_ms,
+                    error={
+                        "type": "runtime_error",
+                        "message": str(e),
+                        "details": {"stage": "write_outputs"},
+                    },
+                )
 
-        if not result.success and result.error:
+                # Ensure we still persist error JSON somewhere (fallback to ./out.error.json)
+                written_path = _write_error_json_fallback(result, json_out)
+                if written_path is not None and written_path != json_out:
+                    console.print(
+                        f"[red]⚠️ Failed to write JSON to {json_out}: {e}[/red]\n"
+                        f"[blue]📊 JSON output written to: {written_path}[/blue]"
+                    )
+                elif written_path is not None:
+                    console.print(f"[blue]📊 JSON output written to: {written_path}[/blue]")
+
+            # Print summary AFTER output attempts so success reflects end-to-end status
+            total_ms = result.timings_ms.get("total_ms") if result.timings_ms else None
             console.print(
-                "[bold red]Failure Details[/bold red]\n"
-                f"- error.type: {result.error.type}\n"
-                f"- error.message: {result.error.message}\n"
+                f"\n[bold]Run Summary[/bold]\n"
+                f"- request_id: {result.request_id}\n"
+                f"- success: {result.success}\n"
+                f"- total_ms: {total_ms}\n"
             )
-            
-        if result.fallback:
-                console.print("[bold]Fallback[/bold]")
-                for item in result.fallback:
-                    console.print(f"- {item}")
-        
-        # Display results
-        if result.success:
-            console.print("\n[green]✅ Task completed![/green]")
-        else:
-            console.print("\n[red]❌ Task failed![/red]")
+    
+            if not result.success and result.error:
+                console.print(
+                    "[bold red]Failure Details[/bold red]\n"
+                    f"- error.type: {result.error['type']}\n"
+                    f"- error.message: {result.error['message']}\n"
+                )
+                if result.fallback:
+                    console.print("[bold]Fallback[/bold]")
+                    for item in result.fallback:
+                        console.print(f"- {item}")
 
-        console.print(f"Changes: {len(result.changes)} files modified")
-       
-        # Create table of changes
-        if result.changes:
-            table = Table(title="Changes Made")
-            table.add_column("File", style="cyan")
-            table.add_column("Summary", style="white")
-            for change in result.changes[:5]:  # Show first 5
-                table.add_row(change.file, change.summary[:50])
-            console.print(table)
+            # Display results
+            if result.success:
+                console.print("\n[green]✅ Task completed![/green]")
+            else:
+                console.print("\n[red]❌ Task failed![/red]")
 
-        # Write output files
-        from .runner import run_task
-        result = run_task(config)
+            console.print(f"Changes: {len(result.changes)} files modified")
+    
+            # Show table only on success (optional, but keeps failure output clean)
+            if result.success and result.changes:
+                table = Table(title="Changes Made")
+                table.add_column("File", style="cyan")
+                table.add_column("Summary", style="white")
+                for change in result.changes[:5]:
+                    table.add_row(change.file, change.summary[:50])
+                console.print(table)
 
-        # --- Attempt to write outputs; if it fails, convert to runtime_error and overwrite result ---
-        output_write_error = None
-
-        try:
-            if out:
-                out.write_text(result.to_markdown())
-                console.print(f"\n[blue]📝 Markdown output written to: {out}[/blue]")
-
-            if json_out:
-                json_out.write_text(result.to_json())
-                console.print(f"[blue]📊 JSON output written to: {json_out}[/blue]")
+            if not result.success:
+                raise typer.Exit(1)
 
         except Exception as e:
-            output_write_error = e
+            console.print(f"[red]❌ Error: {e}[/red]")
 
-            # Convert to explicit failure result (end-to-end failure)
-            result = TaskResult(
-                request_id=result.request_id,          # IMPORTANT: keep same request_id
+            fail_result = TaskResult(
+                request_id=uuid.uuid4().hex,
                 success=False,
                 message=str(e),
-                changes=[],                            # optionally keep original result.changes if you prefer
-                plan=[],
+                timings_ms={"total_ms": 0.0},
+                error={
+                    "type": "runtime_error",
+                    "message": str(e),
+                    "details": {"stage": "cli_exception"},
+                },
                 commands=[],
                 risks=[],
                 fallback=[
-                    "Choose a writable output path for --json-out/--out.",
-                    "Example: --json-out out.json",
+                    "Re-run with a simpler task.",
+                    "Check your environment and dependencies.",
                 ],
-                timings_ms=result.timings_ms,          # keep timings from run_task
-                error=ErrorInfo(
-                    type="runtime_error",
-                    message=str(e),
-                    details={"stage": "write_outputs"},
-                ),
             )
 
-            # If user requested JSON output, ensure we still persist the failure JSON somewhere
-            written_path = _write_error_json_fallback(result, json_out)
-            if written_path is not None and written_path != json_out:
-                console.print(
-                    f"[red]⚠️ Failed to write JSON to {json_out}: {e}[/red]\n"
-                    f"[blue]📊 JSON output written to: {written_path}[/blue]"
-                )
-            elif written_path is not None:
+            written_path = _write_error_json_fallback(fail_result, json_out)
+            if written_path is not None:
                 console.print(f"[blue]📊 JSON output written to: {written_path}[/blue]")
+            else:
+                console.print(fail_result.to_json())
 
-        # --- Now print Run Summary based on (possibly overwritten) result ---
-        total_ms = result.timings_ms.get("total_ms") if result.timings_ms else None
-
-        console.print(
-            f"\n[bold]Run Summary[/bold]\n"
-            f"- request_id: {result.request_id}\n"
-            f"- success: {result.success}\n"
-            f"- total_ms: {total_ms}\n"
-        )
-
-        if not result.success and result.error:
-            console.print(
-                "[bold red]Failure Details[/bold red]\n"
-                f"- error.type: {result.error.type}\n"
-                f"- error.message: {result.error.message}\n"
-            )
-            if result.fallback:
-                console.print("[bold]Fallback[/bold]")
-                for item in result.fallback:
-                    console.print(f"- {item}")
-
-        # Display results
-        if result.success:
-            console.print("\n[green]✅ Task completed![/green]")
-        else:
-            console.print("\n[red]❌ Task failed![/red]")
+            raise typer.Exit(1)
         
-        console.print(f"Changes: {len(result.changes)} files modified")
-
-
 @app.command()
 def version():
     """Show version information."""
