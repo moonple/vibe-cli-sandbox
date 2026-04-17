@@ -76,14 +76,8 @@ def run(
             f"- success: {result.success}\n"
             f"- total_ms: {total_ms}\n"
         )
-
-        if not result.success and result.error:
-            console.print(
-                "[bold red]Failure Details[/bold red]\n"
-                f"- error.type: {result.error.type}\n"
-                f"- error.message: {result.error.message}\n"
-            )
-            if result.fallback:
+        
+        if result.fallback:
                 console.print("[bold]Fallback[/bold]")
                 for item in result.fallback:
                     console.print(f"- {item}")
