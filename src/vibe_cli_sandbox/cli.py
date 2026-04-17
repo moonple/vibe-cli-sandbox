@@ -7,8 +7,8 @@ from rich.table import Table
 from pathlib import Path
 from typing import Optional
 import uuid
+from .models import TaskConfig, TaskResult, ErrorInfo
 
-from .models import TaskConfig, TaskResult
 
 app = typer.Typer(help="Vibe CLI Sandbox - AI-powered code assistance")
 console = Console()
@@ -108,11 +108,11 @@ def run(
                     "Example: --json-out out.json",
                 ],
                 timings_ms=result.timings_ms,
-                error={
-                    "type": "runtime_error",
-                    "message": str(e),
-                    "details": {"stage": "write_outputs"},
-                },
+                error=ErrorInfo(
+                    type="runtime_error",
+                    message=str(e),
+                    details="stage=write_outputs",
+                ),
             )
 
             # Ensure we still persist error JSON somewhere (fallback to ./out.error.json)
@@ -137,8 +137,8 @@ def run(
         if not result.success and result.error:
             console.print(
                 "[bold red]Failure Details[/bold red]\n"
-                f"- error.type: {result.error['type']}\n"
-                f"- error.message: {result.error['message']}\n"
+                f"- error.type: {result.error.type}\n"
+                f"- error.message: {result.error.message}\n"
             )
             if result.fallback:
                 console.print("[bold]Fallback[/bold]")
@@ -172,11 +172,11 @@ def run(
             success=False,
             message=str(e),
             timings_ms={"total_ms": 0.0},
-            error={
-                "type": "runtime_error",
-                "message": str(e),
-                "details": {"stage": "cli_exception"},
-            },
+            error=ErrorInfo(
+                type="runtime_error",
+                message=str(e),
+                details="stage=cli_exception",
+            ),
             commands=[],
             risks=[],
             fallback=[
