@@ -13,6 +13,26 @@ from .models import TaskConfig, TaskResult
 app = typer.Typer(help="Vibe CLI Sandbox - AI-powered code assistance")
 console = Console()
 
+from pathlib import Path
+
+def _write_text_safely(path: Path, content: str) -> None:
+    path.write_text(content)
+
+def _write_error_json_fallback(fail_result, requested_json_out: Path | None) -> Path | None:
+    """
+    Try to write fail_result JSON to requested_json_out; if that fails, write to ./out.error.json.
+    Returns the path that was written, or None if nothing was written.
+    """
+    if requested_json_out is not None:
+        try:
+            requested_json_out.write_text(fail_result.to_json())
+            return requested_json_out
+        except Exception:
+            fallback_path = Path("out.error.json")
+            fallback_path.write_text(fail_result.to_json())
+            return fallback_path
+
+    return None
 
 @app.command()
 def run(
@@ -107,53 +127,83 @@ def run(
             console.print(table)
 
         # Write output files
-        if out:
-            out.write_text(result.to_markdown())
-            console.print(f"\n[blue]📝 Markdown output written to: {out}[/blue]")
+        from .runner import run_task
+        result = run_task(config)
 
-        if json_out:
-            json_out.write_text(result.to_json())
-            console.print(f"[blue]📊 JSON output written to: {json_out}[/blue]")
+        # --- Attempt to write outputs; if it fails, convert to runtime_error and overwrite result ---
+        output_write_error = None
 
-    except Exception as e:
-        console.print(f"[red]❌ Error: {e}[/red]")
+        try:
+            if out:
+                out.write_text(result.to_markdown())
+                console.print(f"\n[blue]📝 Markdown output written to: {out}[/blue]")
 
-        # 1) Always build the failure result FIRST (so it exists even if writing fails)
-        fail_result = TaskResult(
-            request_id=uuid.uuid4().hex,
-            success=False,
-            message=str(e),
-            timings_ms={"total_ms": 0.0},
-            error={
-                "type": "runtime_error",
-                "message": str(e),
-                "details": None,
-            },
-            commands=[],
-            risks=[],
-            fallback=[
-                "Re-run with a simpler task.",
-                "Check your environment and dependencies.",
-            ],
+            if json_out:
+                json_out.write_text(result.to_json())
+                console.print(f"[blue]📊 JSON output written to: {json_out}[/blue]")
+
+        except Exception as e:
+            output_write_error = e
+
+            # Convert to explicit failure result (end-to-end failure)
+            result = TaskResult(
+                request_id=result.request_id,          # IMPORTANT: keep same request_id
+                success=False,
+                message=str(e),
+                changes=[],                            # optionally keep original result.changes if you prefer
+                plan=[],
+                commands=[],
+                risks=[],
+                fallback=[
+                    "Choose a writable output path for --json-out/--out.",
+                    "Example: --json-out out.json",
+                ],
+                timings_ms=result.timings_ms,          # keep timings from run_task
+                error=ErrorInfo(
+                    type="runtime_error",
+                    message=str(e),
+                    details={"stage": "write_outputs"},
+                ),
+            )
+
+            # If user requested JSON output, ensure we still persist the failure JSON somewhere
+            written_path = _write_error_json_fallback(result, json_out)
+            if written_path is not None and written_path != json_out:
+                console.print(
+                    f"[red]⚠️ Failed to write JSON to {json_out}: {e}[/red]\n"
+                    f"[blue]📊 JSON output written to: {written_path}[/blue]"
+                )
+            elif written_path is not None:
+                console.print(f"[blue]📊 JSON output written to: {written_path}[/blue]")
+
+        # --- Now print Run Summary based on (possibly overwritten) result ---
+        total_ms = result.timings_ms.get("total_ms") if result.timings_ms else None
+
+        console.print(
+            f"\n[bold]Run Summary[/bold]\n"
+            f"- request_id: {result.request_id}\n"
+            f"- success: {result.success}\n"
+            f"- total_ms: {total_ms}\n"
         )
 
-        # 2) Try writing JSON to the requested path; if that fails, fallback to CWD
-        if json_out:
-            try:
-                json_out.write_text(fail_result.to_json())
-                console.print(f"[blue]📊 JSON output written to: {json_out}[/blue]")
-            except Exception as write_err:
-                fallback_path = Path("out.error.json")
-                fallback_path.write_text(fail_result.to_json())
-                console.print(
-                    f"[red]⚠️ Failed to write JSON to {json_out}: {write_err}[/red]\n"
-                    f"[blue]📊 JSON output written to: {fallback_path}[/blue]"
-                )
-        else:
-            # If no json_out provided, print JSON to stdout
-            console.print(fail_result.to_json())
+        if not result.success and result.error:
+            console.print(
+                "[bold red]Failure Details[/bold red]\n"
+                f"- error.type: {result.error.type}\n"
+                f"- error.message: {result.error.message}\n"
+            )
+            if result.fallback:
+                console.print("[bold]Fallback[/bold]")
+                for item in result.fallback:
+                    console.print(f"- {item}")
 
-        raise typer.Exit(1)
+        # Display results
+        if result.success:
+            console.print("\n[green]✅ Task completed![/green]")
+        else:
+            console.print("\n[red]❌ Task failed![/red]")
+        
+        console.print(f"Changes: {len(result.changes)} files modified")
 
 
 @app.command()
