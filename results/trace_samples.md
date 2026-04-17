@@ -7,3 +7,5 @@
 | 1 | 2026-04-17 | b189127cfda744da85cf28ac404dcea0 | timing smoke test | . | true | 0.08671300020068884 |  | success baseline |
 | 2 | 2026-04-17 | 4cd8c85083164ce09dfeb4f586a2a487 | (empty / spaces) | . | false |  0.0 | invalid_input | pre-check in CLI |
 | 3 | 2026-04-17 | 9fafb0a6929f4fc193a5a172f2527a97 | test | /path/does/not/exist | false | 0.038772999914726824 | repo_not_found | validation in runner |
+| 4 | 2026-04-17 | 31e30863dcd04b319e872263d0a60a90 | (your choice) | . | false | 0.09422999983144109 | runtime_error | PermissionError writing json_out |
+| 5 | 2026-04-17 | (paste) | (your choice) | . | true/false | (paste) |  | additional sample |
