@@ -63,31 +63,30 @@ def run(
     try:
         from .runner import run_task
         result = run_task(config)
-
         # Week3: observability log summary (always print request_id + total_ms)
-    total_ms = None
-    try:
-        total_ms = result.timings_ms.get("total_ms")
-    except Exception:
         total_ms = None
-
-    console.print(
-        f"\n[bold]Run Summary[/bold]\n"
-        f"- request_id: {result.request_id}\n"
-        f"- success: {result.success}\n"
-        f"- total_ms: {total_ms}\n"
-    )
-
-    if not result.success and result.error:
+        try:
+            total_ms = result.timings_ms.get("total_ms")
+        except Exception:
+            total_ms = None
+    
         console.print(
-            "[bold red]Failure Details[/bold red]\n"
-            f"- error.type: {result.error.type}\n"
-            f"- error.message: {result.error.message}\n"
+            f"\n[bold]Run Summary[/bold]\n"
+            f"- request_id: {result.request_id}\n"
+            f"- success: {result.success}\n"
+            f"- total_ms: {total_ms}\n"
         )
-        if result.fallback:
-            console.print("[bold]Fallback[/bold]")
-            for item in result.fallback:
-                console.print(f"- {item}")
+
+        if not result.success and result.error:
+            console.print(
+                "[bold red]Failure Details[/bold red]\n"
+                f"- error.type: {result.error.type}\n"
+                f"- error.message: {result.error.message}\n"
+            )
+            if result.fallback:
+                console.print("[bold]Fallback[/bold]")
+                for item in result.fallback:
+                    console.print(f"- {item}")
         
         # Display results
         if result.success:
