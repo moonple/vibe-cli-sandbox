@@ -97,8 +97,6 @@ def run(
 
         console.print(f"Changes: {len(result.changes)} files modified")
         if not result.success and result.error:
-            console.print(f"[red]Error type:[/red] {result.error.type}")
-            console.print(f"[red]Error message:[/red] {result.error.message}")
 
         # Create table of changes
         if result.changes:
