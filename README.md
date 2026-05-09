@@ -44,3 +44,7 @@ python eval/run_cases.py
 - Cases: `eval/cases_v0.json`
 - Runner: `eval/run_cases.py`
 - Output: `eval/report.json` (gitignored)
+
+## Cross-Repo Sync
+
+- 2026-05 同步包：`docs/cross-repo-sync-2026-05.md`
