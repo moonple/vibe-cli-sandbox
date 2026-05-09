@@ -1,230 +1,89 @@
-# Cross-Repo Sync Pack (2026-05-09)
+# Cross-Repo Sync 2026-05
 
-目标：把 `moonple/vibe-cli-sandbox` 的可观测性与错误规范，同步到：
+本文件汇总从 `career-llm-plan` 与 `llm-infer-deploy-lab` 提取到 `vibe-cli-sandbox` 的重要信息，重点保留：计划、提示词、产品定位、评测与可观测要求。
 
-- `moonple/career-llm-plan`
-- `moonple/llm-infer-deploy-lab`
+## 1. 来源仓库
 
----
+- 背景/计划仓库：`moonple/career-llm-plan`
+- 推理实验仓库：`moonple/llm-infer-deploy-lab`
+- 目标仓库：`moonple/vibe-cli-sandbox`
 
-## 1) 源仓库（vibe-cli-sandbox）当前基线总结
+## 2. 关键定位
 
-### 1.1 当前功能与任务运行流程
+### 产品1：Vibe Coding-inspired（开发者工作流）
+- 先 CLI，后 FastAPI
+- 目标是做出可 demo、可复跑的最小闭环
+- 输出重点：`plan` / `patch` / `commands` / `fallback`
+- 强调：Eval-first、Observability-first、可靠性、回归迭代
 
-1. CLI 入口：`vibe run --repo <path> --task <text> [--out out.md] [--json-out out.json]`
-2. 运行阶段：
-   - 参数预检查（`task.strip()`）
-   - `runner.run_task()`（校验 repo、生成结果）
-   - 写 markdown/json 输出
-3. 失败处理：
-   - 输入非法：`invalid_input`
-   - repo 路径不存在：`repo_not_found`
-   - 运行期异常（含输出写文件失败）：`runtime_error`
-4. 关键 fallback 约定：
-   - 失败时 `fallback` 给出可执行下一步
-   - `--json-out` 不可写时，降级写 `out.error.json`
+### 产品2：Eval + Observability 小平台
+- 目标是把产品1沉淀的能力平台化
+- 重点能力：版本对比、trace 检索、失败聚类、数据集管理
 
-### 1.2 输出可观测性约定（TaskResult）
+## 3. 可直接复用的仓库工作流
 
-- `request_id`：每次运行唯一 ID（trace/eval 串联主键）
-- `success`：最终端到端是否成功
-- `timings_ms.total_ms`：总耗时（失败也必须有）
-- `error`：失败时结构化对象（`type/message/details`），成功时 `null`
-- `commands/risks/fallback`：成功/失败都必须存在（可为空）
+### 新对话启动模板
+- 复制 `career-llm-plan/prompts/prompt.md` 的内容作为对话首条消息
+- 再追加 `plans/weekly-log.md` 的最新一周日志
+- 如有必要，再补充 `context/profile.md`、`context/constraints.md` 的相关段落
 
-### 1.3 Week2 / Week3 规范要点
+### 周度维护节奏
+- 更新周日志
+- 记录新的方向决策 / 常见问答
+- 更新环境与约束
+- 保持 main 分支为最新
 
-- Week2 输入与错误类型基线：
-  - `invalid_input`
-  - `repo_not_found`
-  - `runtime_error`
-  - `success baseline`（成功样本）
-- Week3 trace 样本：
-  - 在 `results/trace_samples.md` 记录 `request_id/success/total_ms/error.type/notes`
-  - 推荐同时归档 `results/traces/*.json` 作为可复现证据
+## 4. 需要保留的背景信息
 
----
+### 个人身份与约束
+- 目标角色：AI 产品经理（平台型）
+- 环境：Windows 11 + WSL2 + Ubuntu
+- GPU：RTX 3060 6GB
+- 约束：WSL 内 Hugging Face 访问受限，模型需先下载到 Windows 再拷贝到 WSL
 
-## 2) 目标仓库一：career-llm-plan 同步内容
+### 已验证推理方向
+- llama.cpp（CUDA）
+- Qwen2.5-3B-Instruct Q4_K_M GGUF
+- 命令行推理与 llama.cpp server
 
-仓库现状：以计划/提示词/周志为主，无独立 CLI 入口。建议同步“规范与模板”，并提供最小 JSON 产物生成方式。
+### 评测与观测要求
+- 固定用例集（Eval）
+- 请求级追踪（Trace）
+- TTFT / tokens/s / 错误分类
+- 版本对比与回归报告
 
-### 2.1 README 新增段落（建议追加）
+## 5. 关键文件摘要
 
-```markdown
-## 任务执行与输出格式约定（Sync with vibe-cli-sandbox）
+### career-llm-plan
+- `context/profile.md`：AI PM（平台型）定位、产品1/2 描述
+- `context/constraints.md`：RTX 3060 6GB、WSL2、Hugging Face 约束
+- `context/qa.md`：方向选择、术语、决策记录
+- `plans/12-week-plan.md`：12 周交付计划
+- `plans/weekly-log.md`：每周复盘模板
+- `prompts/prompt.md`：新对话启动提示词
+- `projects/llama-cpp-wsl/README.md`：WSL 下 llama.cpp 推理记录
 
-本仓库的计划任务记录采用统一 JSON 结构，字段与 vibe-cli-sandbox 对齐，便于后续汇总与评测：
+### llm-infer-deploy-lab
+- `README.md`：LLM 推理部署目标、基准测试结论、启动方式
+- `eval/README.md`：评测脚本、报告结构、错误类型、用例字段
 
-- `request_id`: 本次任务唯一 ID
-- `success`: 是否成功
-- `timings_ms.total_ms`: 总耗时（毫秒）
-- `error`: 失败时结构化错误（`type/message/details`）
-- `fallback`: 失败时下一步建议（数组）
+## 6. 精简版可复用提示词
 
-建议错误类型基线：
-- `invalid_input`（输入为空/格式不合法）
-- `repo_not_found`（引用路径不存在）
-- `runtime_error`（其他运行时问题）
-```
+> 你好！请先阅读以下背景信息：
+> - 我目标是做 AI 产品经理（平台型）
+> - 产品1 是 Vibe Coding-inspired 的开发者工作流应用，先 CLI 后 FastAPI
+> - 产品2 是 Eval + Observability 小平台
+> - 设备是 RTX 3060 6GB，Windows 11 + WSL2 + Ubuntu
+> - WSL 内 Hugging Face 访问受限，模型需通过 Windows 下载后拷贝到 WSL
+> - 重点是 Eval-first、Observability-first、可靠性、性能与回归迭代
+> 请你在后续任务中默认输出：任务拆解、验收标准、风险点、指标建议。
 
-### 2.2 新增文件：`results/trace_samples.md`（模板）
+## 7. 进一步建议
 
-````markdown
-# Trace Samples
-
-> 用于记录计划任务执行样本，保证 request_id / timings_ms / error.type 可追踪。
-
-| # | date | request_id | task | success | total_ms | error.type | notes |
-|---|---|---|---|---|---|---|---|
-| 1 | YYYY-MM-DD | <id> | weekly planning baseline | true | <ms> | - | success baseline |
-| 2 | YYYY-MM-DD | <id> | empty objective | false | 0.0 | invalid_input | objective is empty |
-| 3 | YYYY-MM-DD | <id> | missing context path | false | <ms> | repo_not_found | context file missing |
-| 4 | YYYY-MM-DD | <id> | write artifact permission denied | false | 0.0 | runtime_error | fallback to local writable path |
-```
-````
-
-### 2.3 新增文件：`prompts/task-result-template.md`
-
-````markdown
-# Task Result Prompt Template
-
-请按以下 JSON 输出，不要省略字段：
-
-```json
-{
-  "request_id": "<uuid>",
-  "success": true,
-  "message": "...",
-  "commands": [],
-  "risks": [],
-  "fallback": [],
-  "timings_ms": {"total_ms": 0.0},
-  "error": null,
-  "plan": [],
-  "changes": []
-}
-```
-
-失败时：
-- `success=false`
-- 填写 `error.type`（`invalid_input` / `repo_not_found` / `runtime_error`）
-- 给出可执行 `fallback`
-```
-````
-
-### 2.4 JSON 产物生成示例命令（与仓库结构匹配）
-
-```bash
-mkdir -p results/traces
-python3 - <<'PY'
-import json, time, uuid, pathlib
-started = time.perf_counter()
-out = {
-  "request_id": uuid.uuid4().hex,
-  "success": True,
-  "message": "weekly planning baseline",
-  "commands": ["update plans/weekly-log.md"],
-  "risks": [],
-  "fallback": [],
-  "timings_ms": {"total_ms": round((time.perf_counter() - started) * 1000, 3)},
-  "error": None,
-  "plan": ["collect context", "update weekly log", "summarize next actions"],
-  "changes": [{"file": "plans/weekly-log.md", "summary": "append week progress", "diff": None}]
-}
-path = pathlib.Path("results/traces/01_success_baseline.json")
-path.write_text(json.dumps(out, indent=2, ensure_ascii=False), encoding="utf-8")
-print(path)
-PY
-```
-
----
-
-## 3) 目标仓库二：llm-infer-deploy-lab 同步内容
-
-仓库现状：已有 `eval/run_cases.py`，可直接输出 `eval/report.json`；适合补齐“TaskResult 风格可观测约定 + trace 样本模板 + 失败 fallback 指引”。
-
-### 3.1 README 新增段落（建议追加）
-
-```markdown
-## 任务执行与输出格式约定（Sync with vibe-cli-sandbox）
-
-除 `eval/report.json` 外，建议统一记录以下可观测字段：
-
-- `request_id`: 每次评测/调用唯一标识
-- `success`: 本次运行是否成功（端到端）
-- `timings_ms.total_ms`: 总耗时
-- `error`: 结构化错误（`runtime_error` / `timeout_error` / `quality_error` / `config_error`）
-- `fallback`: 失败后建议操作（例如切换 `--offline`、检查 server URL、缩短 case）
-
-建议失败时总是保留 JSON 结果文件，便于 trace 回放。
-```
-
-### 3.2 新增文件：`results/trace_samples.md`（模板）
-
-````markdown
-# Trace Samples
-
-| # | date | request_id | mode | case_id | success | total_ms | error.type | notes |
-|---|---|---|---|---|---|---|---|---|
-| 1 | YYYY-MM-DD | <id> | offline | schema_check | true | <ms> | - | success baseline |
-| 2 | YYYY-MM-DD | <id> | online | <case> | false | <ms> | runtime_error | server unreachable |
-| 3 | YYYY-MM-DD | <id> | online | <case> | false | <ms> | timeout_error | timeout_s exceeded |
-| 4 | YYYY-MM-DD | <id> | online | <case> | false | <ms> | quality_error | quality gate failed |
-```
-````
-
-### 3.3 新增文件：`docs/fallback-guidelines.md`
-
-````markdown
-# Fallback Guidelines
-
-当评测失败时，按顺序执行：
-
-1. `runtime_error`
-   - 先检查服务端口/根路径是否可达：`curl http://localhost:8080`
-   - （可选）若仓库实现了健康检查端点，再执行：`curl http://localhost:8080/health`
-   - 改用离线评测：`python3 eval/run_cases.py --offline`
-2. `timeout_error`
-   - 降低 `n_predict`，增大 `timeout_s`
-3. `quality_error`
-   - 调整 prompt / 关键词门控，重新评测
-4. `config_error`
-   - 修复 `eval/cases.json` 必填字段（`id`, `prompt`）
-```
-````
-
-### 3.4 运行与生成 JSON 示例命令（与现有入口一致）
-
-```bash
-# 1) 离线模式（无需服务）
-python3 eval/run_cases.py --offline
-
-# 2) 在线模式（需本地服务）
-python3 eval/run_cases.py --server http://localhost:8080
-
-# 3) 从 eval/report.json 提取 trace 样本行（示例）
-python3 - <<'PY'
-import json, uuid, datetime
-r = json.load(open('eval/report.json', 'r', encoding='utf-8'))
-for c in r.get('cases', []):
-    rid = uuid.uuid4().hex
-    total = (c.get('timings_ms') or {}).get('total_ms', c.get('duration_ms', 0.0))
-    et = c.get('error_type') or '-'
-    print(f"| N | {datetime.date.today()} | {rid} | {r.get('mode')} | {c.get('id')} | {str(c.get('ok')).lower()} | {total} | {et} | imported from eval/report.json |")
-PY
-```
-
----
-
-## 4) 本次同步建议的提交说明模板
-
-### Commit message（示例）
-
-- `docs(sync): align career-llm-plan and llm-infer-deploy-lab with vibe observability contract`
-
-### PR 描述（示例）
-
-- 同步了 `request_id/success/timings_ms/error/fallback` 输出约定
-- 对齐了 Week2/Week3 错误类型与 trace sample 规范（`invalid_input/repo_not_found/runtime_error/success baseline`）
-- 提供了两个目标仓库可直接落地的 README 片段、trace 模板、prompt/guide 模板与可执行命令
+如果后续继续同步，建议把以下内容也落到 `docs/` 或 `notes/` 中：
+- 12 周计划的拆解版
+- 周度复盘记录
+- 产品 demo 脚本
+- 评测 case 集与评分规则
+- 性能对比表与 trace 样例
+- 最终版启动提示词
