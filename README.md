@@ -35,7 +35,7 @@
 ## 项目文档入口
 
 - `docs/startup-prompt.md`  
-  新对话启动提示词，适合直接复��给 Copilot / LLM。
+  新对话启动提示词，适合直接复制给 Copilot / LLM。
 
 - `docs/career-context-summary.md`  
   记录项目目标、产品1/产品2 定位、背景与约束。
