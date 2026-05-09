@@ -183,7 +183,7 @@ PY
 
 1. `runtime_error`
    - 先检查服务端口/根路径是否可达：`curl http://localhost:8080`
-   - 如仓库已提供健康检查端点，再补充：`curl http://localhost:8080/health`
+   - （可选）若仓库实现了健康检查端点，再执行：`curl http://localhost:8080/health`
    - 改用离线评测：`python3 eval/run_cases.py --offline`
 2. `timeout_error`
    - 降低 `n_predict`，增大 `timeout_s`
