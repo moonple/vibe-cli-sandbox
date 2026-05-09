@@ -76,7 +76,7 @@
 > 用于记录计划任务执行样本，保证 request_id / timings_ms / error.type 可追踪。
 
 | # | date | request_id | task | success | total_ms | error.type | notes |
-|---:|---|---|---|---|---:|---|---|
+|---|---|---|---|---|---|---|---|
 | 1 | YYYY-MM-DD | <id> | weekly planning baseline | true | <ms> | - | success baseline |
 | 2 | YYYY-MM-DD | <id> | empty objective | false | 0.0 | invalid_input | objective is empty |
 | 3 | YYYY-MM-DD | <id> | missing context path | false | <ms> | repo_not_found | context file missing |
@@ -166,7 +166,7 @@ PY
 # Trace Samples
 
 | # | date | request_id | mode | case_id | success | total_ms | error.type | notes |
-|---:|---|---|---|---|---|---:|---|---|
+|---|---|---|---|---|---|---|---|---|
 | 1 | YYYY-MM-DD | <id> | offline | schema_check | true | <ms> | - | success baseline |
 | 2 | YYYY-MM-DD | <id> | online | <case> | false | <ms> | runtime_error | server unreachable |
 | 3 | YYYY-MM-DD | <id> | online | <case> | false | <ms> | timeout_error | timeout_s exceeded |
@@ -182,7 +182,7 @@ PY
 当评测失败时，按顺序执行：
 
 1. `runtime_error`
-   - 检查服务是否启动：`curl http://localhost:8080/health`（如有）
+   - 检查服务端口/根路径是否可达：`curl http://localhost:8080`（如仓库已提供 `/health` 再优先用健康检查）
    - 改用离线评测：`python3 eval/run_cases.py --offline`
 2. `timeout_error`
    - 降低 `n_predict`，增大 `timeout_s`
