@@ -119,6 +119,7 @@
 mkdir -p results/traces
 python3 - <<'PY'
 import json, time, uuid, pathlib
+started = time.perf_counter()
 out = {
   "request_id": uuid.uuid4().hex,
   "success": True,
@@ -126,7 +127,7 @@ out = {
   "commands": ["update plans/weekly-log.md"],
   "risks": [],
   "fallback": [],
-  "timings_ms": {"total_ms": round(1000*(time.perf_counter()%1), 3)},
+  "timings_ms": {"total_ms": round((time.perf_counter() - started) * 1000, 3)},
   "error": None,
   "plan": ["collect context", "update weekly log", "summarize next actions"],
   "changes": [{"file": "plans/weekly-log.md", "summary": "append week progress", "diff": None}]
@@ -166,7 +167,7 @@ PY
 
 | # | date | request_id | mode | case_id | success | total_ms | error.type | notes |
 |---:|---|---|---|---|---|---:|---|---|
-| 1 | YYYY-MM-DD | <id> | offline | schema_check | true | 0.0 | - | success baseline |
+| 1 | YYYY-MM-DD | <id> | offline | schema_check | true | <ms> | - | success baseline |
 | 2 | YYYY-MM-DD | <id> | online | <case> | false | <ms> | runtime_error | server unreachable |
 | 3 | YYYY-MM-DD | <id> | online | <case> | false | <ms> | timeout_error | timeout_s exceeded |
 | 4 | YYYY-MM-DD | <id> | online | <case> | false | <ms> | quality_error | quality gate failed |
