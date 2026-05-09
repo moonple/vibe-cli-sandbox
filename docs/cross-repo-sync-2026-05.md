@@ -182,7 +182,8 @@ PY
 当评测失败时，按顺序执行：
 
 1. `runtime_error`
-   - 检查服务端口/根路径是否可达：`curl http://localhost:8080`（如仓库已提供 `/health` 再优先用健康检查）
+   - 先检查服务端口/根路径是否可达：`curl http://localhost:8080`
+   - 如仓库已提供健康检查端点，再补充：`curl http://localhost:8080/health`
    - 改用离线评测：`python3 eval/run_cases.py --offline`
 2. `timeout_error`
    - 降低 `n_predict`，增大 `timeout_s`
@@ -210,7 +211,7 @@ for c in r.get('cases', []):
     rid = uuid.uuid4().hex
     total = (c.get('timings_ms') or {}).get('total_ms', c.get('duration_ms', 0.0))
     et = c.get('error_type') or '-'
-    print(f"| ? | {datetime.date.today()} | {rid} | {r.get('mode')} | {c.get('id')} | {str(c.get('ok')).lower()} | {total} | {et} | imported from eval/report.json |")
+    print(f"| N | {datetime.date.today()} | {rid} | {r.get('mode')} | {c.get('id')} | {str(c.get('ok')).lower()} | {total} | {et} | imported from eval/report.json |")
 PY
 ```
 
