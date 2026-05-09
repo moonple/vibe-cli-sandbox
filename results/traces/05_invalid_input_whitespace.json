@@ -1,0 +1,21 @@
+{
+  "request_id": "527e1215e4e44eab935c6e7f7cb79582",
+  "success": false,
+  "message": "Invalid input: --task is empty",
+  "changes": [],
+  "plan": [],
+  "commands": [],
+  "risks": [],
+  "fallback": [
+    "Provide a non-empty --task string.",
+    "Example: vibe run --repo . --task \"timing smoke test\" --json-out out.json"
+  ],
+  "timings_ms": {
+    "total_ms": 0.0
+  },
+  "error": {
+    "type": "invalid_input",
+    "message": "Invalid input: --task is empty",
+    "details": null
+  }
+}

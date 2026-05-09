@@ -1,0 +1,23 @@
+{
+  "request_id": "71df70e4079a438583076390142dacdd",
+  "success": false,
+  "message": "[Errno 13] Permission denied: '/root/out.runtime.json'",
+  "changes": [],
+  "plan": [],
+  "commands": [],
+  "risks": [],
+  "fallback": [
+    "Choose a writable output path for --json-out/--out.",
+    "Example: --json-out out.json"
+  ],
+  "timings_ms": {
+    "validate_repo_ms": 0.025758000447240192,
+    "mock_generate_ms": 0.06829100038885372,
+    "total_ms": 0.10835000011866214
+  },
+  "error": {
+    "type": "runtime_error",
+    "message": "[Errno 13] Permission denied: '/root/out.runtime.json'",
+    "details": "stage=write_outputs"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "request_id": "519926a774f544c9bb53a2c5c3ec8079",
+  "success": true,
+  "message": "Successfully processed task: timing smoke test",
+  "changes": [
+    {
+      "file": "README.md",
+      "summary": "Updated documentation with task information",
+      "diff": "+ # Task: timing smoke test\n+ This task was processed by vibe."
+    },
+    {
+      "file": "src/main.py",
+      "summary": "Added logging for task execution",
+      "diff": "+ import logging\n+ logging.info('Task executed')"
+    }
+  ],
+  "plan": [
+    "1. Scan repository structure and identify relevant files",
+    "2. Propose minimal changes and expected diffs",
+    "3. Provide verification commands and fallback steps"
+  ],
+  "commands": [
+    "python -m pytest -q"
+  ],
+  "risks": [
+    "Mock implementation: changes/diff are simulated and not applied to repo."
+  ],
+  "fallback": [
+    "If the output is not useful, simplify the task or provide more context."
+  ],
+  "timings_ms": {
+    "validate_repo_ms": 0.028050000310031464,
+    "mock_generate_ms": 0.04702500018538558,
+    "total_ms": 0.09084199973585783
+  },
+  "error": null
+}

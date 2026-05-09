@@ -1,0 +1,22 @@
+{
+  "request_id": "0c978b0da6d642c5bb2c60beaac034c8",
+  "success": false,
+  "message": "Repository path not found: /path/does/not/exist",
+  "changes": [],
+  "plan": [],
+  "commands": [],
+  "risks": [],
+  "fallback": [
+    "Check --repo path (absolute path recommended).",
+    "If you're using a URL, clone it first then pass the local path."
+  ],
+  "timings_ms": {
+    "validate_repo_ms": 0.2920500000982429,
+    "total_ms": 0.3077100000155042
+  },
+  "error": {
+    "type": "repo_not_found",
+    "message": "Repository path not found: /path/does/not/exist",
+    "details": null
+  }
+}
