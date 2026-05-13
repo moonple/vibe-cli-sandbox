@@ -68,7 +68,9 @@ def render_markdown_report(report: dict) -> str:
         for k in ["count", "mean_ms", "p50_ms", "p95_ms", "min_ms", "max_ms"]:
             if k in timing:
                 val = timing[k]
-                if isinstance(val, (int, float)):
+                if k == "count":
+                    lines.append(f"- {k}: {int(val)}\n")
+                elif isinstance(val, (int, float)):
                     lines.append(f"- {k}: {val:.3f}ms\n")
                 else:
                     lines.append(f"- {k}: {val}\n")
